@@ -21,9 +21,9 @@ namespace RrrColor
 
    const static BGRA Black = RrrColor::BGRA{ 0, 0, 0, 255 };
    const static BGRA White = RrrColor::BGRA{ 255, 255, 255, 255 };
-   const static BGRA Red = RrrColor::BGRA{ 255, 0, 255, 255 };
-   const static BGRA Green = RrrColor::BGRA{ 0, 255, 255, 255 };
-   const static BGRA Blue = RrrColor::BGRA{ 255, 255, 0, 255 };
+   const static BGRA Red = RrrColor::BGRA{ 0, 0, 255, 255 };
+   const static BGRA Green = RrrColor::BGRA{ 0, 255, 0, 255 };
+   const static BGRA Blue = RrrColor::BGRA{ 255, 0, 0, 255 };
 }
 
 
@@ -35,11 +35,11 @@ class BMPImg
 #pragma pack(push, 1) //its for tighly pack structure
    struct bitmapFileHeader_s
    {
-      uint16_t  type;             //must be equal to "BM" (or 19788). It declare that this is bmp file
-      uint32_t  size;             //size of .bmp file
-      uint16_t  bfReserved1;        //must be equal 0
-      uint16_t  bfReserved2;        //must be equal 0
-      uint32_t  offset;          //specifies the offset from the beginning of the file to the bitmap data.
+      uint16_t  type = 0x4d42;              //must be equal to "BM" (or 19788). It declare that this is bmp file
+      uint32_t  size;                      //size of .bmp file
+      uint16_t  bfReserved1 = 0;           //must be equal 0
+      uint16_t  bfReserved2 = 0;           //must be equal 0
+      uint32_t  offset;                    //specifies the offset from the beginning of the file to the bitmap data.
    };
 #pragma pack(pop)
 
@@ -47,16 +47,16 @@ class BMPImg
    struct bitmapInfoHeader
    {
       uint32_t headerSize;             //Size of_header_st, standard value = 40
-      int32_t  width;            //width of image, in pixel
-      int32_t  height;           //height of image, in pixel
-      uint16_t planes;           //specifies the number of planes of the target device, must be set to zero.
-      uint16_t bitCount;         //Number of bits per pixel Typical values are 1, 4, 8, 16, 24 and 32.
-      uint32_t compression;      //Type of compression, 0
-      uint32_t imgSize;        //specifies the size of the image data, in bytes. If there is no compression, it is valid to set this member to zero.
-      int32_t  biXPelsPerMeter;    //specifies the the horizontal pixels per meter on the designated targer device, usually set to zero.
-      int32_t  biYPelsPerMeter;    //specifies the the vertical pixels per meter on the designated targer device, usually set to zero.
-      uint32_t biClrUsed;          //specifies the number of colors used in the bitmap, if set to zero the number of colors is calculated using the biBitCount member.
-      uint32_t biClrImportant;     //specifies the number of color that are 'important' for the bitmap, if set to zero, all colors are important.
+      int32_t  width;                  //width of image, in pixel
+      int32_t  height;                 //height of image, in pixel
+      uint16_t planes = 0;             //specifies the number of planes of the target device
+      uint16_t bitCount;               //Number of bits per pixel Typical values are 1, 4, 8, 16, 24 and 32.
+      uint32_t compression;            //Type of compression
+      uint32_t imgSize;                //specifies the size of the image data, in bytes. If there is no compression, it is valid to set this member to zero.
+      int32_t  biXPelsPerMeter = 0;    //specifies the the horizontal pixels per meter on the designated targer device, usually set to zero.
+      int32_t  biYPelsPerMeter = 0;    //specifies the the vertical pixels per meter on the designated targer device, usually set to zero.
+      uint32_t biClrUsed = 0;          //specifies the number of colors used in the bitmap, if set to zero the number of colors is calculated using the biBitCount member.
+      uint32_t biClrImportant = 0;     //specifies the number of color that are 'important' for the bitmap, if set to zero, all colors are important.
    };
 #pragma pack(pop)
 

@@ -14,12 +14,6 @@ BMPImg::BMPImg(std::string fileName)
 //Create 24 bit bmp image
 BMPImg::BMPImg(uint32_t width, uint32_t height)
 {
-   this->fileHeader.type = 0x4d42;
-   this->fileHeader.bfReserved1 = 0;
-   this->fileHeader.bfReserved2 = 0;
-
-   this->infoHeader.biXPelsPerMeter = 5000;
-   this->infoHeader.biYPelsPerMeter = 5000;
    this->infoHeader.width = width;
    this->infoHeader.height = height;
    this->infoHeader.planes = 1;
@@ -41,15 +35,8 @@ BMPImg::BMPImg(uint32_t width, uint32_t height)
 //Create 32 bit bmp with transparency/not transparency background
 BMPImg::BMPImg(uint32_t width, uint32_t height, bool transparency)
 {
-   this->fileHeader.type = 0x4d42;
-   this->fileHeader.bfReserved1 = 0;
-   this->fileHeader.bfReserved2 = 0;
-
-   this->infoHeader.biXPelsPerMeter = 5000;
-   this->infoHeader.biYPelsPerMeter = 5000;
    this->infoHeader.width = width;
    this->infoHeader.height = height;
-   this->infoHeader.planes = 1;
 
    this->infoHeader.headerSize = sizeof(BMPImg::bitmapInfoHeader) + sizeof(BMPImg::bitmapColorHeader_s);
    this->fileHeader.offset = sizeof(BMPImg::bitmapFileHeader_s) + sizeof(BMPImg::bitmapInfoHeader) + sizeof(BMPImg::bitmapColorHeader_s);
