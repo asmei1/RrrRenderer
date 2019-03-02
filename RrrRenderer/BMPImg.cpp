@@ -6,12 +6,40 @@
 #include "BMPImg.h"
 #include "Helpers/FunctionHelper.h"
 
+
 BMPImg::BMPImg(std::string fileName)
 {
    load(fileName);
 }
+//Create 24 bit bmp image
+BMPImg::BMPImg(uint32_t width, uint32_t height)
+{
+   this->fileHeader.type = 0x4d42;
+   this->fileHeader.bfReserved1 = 0;
+   this->fileHeader.bfReserved2 = 0;
 
-BMPImg::BMPImg(uint32_t width, uint32_t height, bool withAlpha)
+   this->infoHeader.biXPelsPerMeter = 5000;
+   this->infoHeader.biYPelsPerMeter = 5000;
+   this->infoHeader.width = width;
+   this->infoHeader.height = height;
+   this->infoHeader.planes = 1;
+   this->infoHeader.headerSize = sizeof(BMPImg::bitmapInfoHeader);
+   this->fileHeader.offset = sizeof(BMPImg::bitmapFileHeader_s) + sizeof(BMPImg::bitmapInfoHeader);
+   this->infoHeader.bitCount = 24;
+   this->infoHeader.compression = 0;
+   this->rowStride = width * 3;
+   for (size_t i = 0; i < height; ++i)
+   {
+      this->dataGrid.push_back(std::vector<uint8_t>(this->rowStride, 0));
+   }
+
+   uint32_t newStride = roundUp(this->rowStride, 4);
+   this->fileHeader.size = this->fileHeader.offset + this->rowStride * height + this->infoHeader.height * (newStride - this->rowStride);
+
+}
+
+//Create 32 bit bmp with transparency/not transparency background
+BMPImg::BMPImg(uint32_t width, uint32_t height, bool transparency)
 {
    this->fileHeader.type = 0x4d42;
    this->fileHeader.bfReserved1 = 0;
@@ -23,35 +51,25 @@ BMPImg::BMPImg(uint32_t width, uint32_t height, bool withAlpha)
    this->infoHeader.height = height;
    this->infoHeader.planes = 1;
 
-   if (withAlpha == true)
-   {
-      this->infoHeader.headerSize = sizeof(BMPImg::bitmapInfoHeader) + sizeof(BMPImg::bitmapColorHeader_s);
-      this->fileHeader.offset = sizeof(BMPImg::bitmapFileHeader_s) + sizeof(BMPImg::bitmapInfoHeader) + sizeof(BMPImg::bitmapColorHeader_s);
-      this->infoHeader.bitCount = 32;
-      this->infoHeader.compression = 3;
-      this->rowStride = width * 4;
-      for (int i = 0; i < height; ++i)
-      {
-         this->dataGrid.push_back(std::vector<uint8_t>(this->rowStride, 255));
-      }
-      this->fileHeader.size = this->fileHeader.offset + this->rowStride * height;
-   }
-   else
-   {
-      this->infoHeader.headerSize = sizeof(BMPImg::bitmapInfoHeader);
-      this->fileHeader.offset = sizeof(BMPImg::bitmapFileHeader_s) + sizeof(BMPImg::bitmapInfoHeader);
-      this->infoHeader.bitCount = 24;
-      this->infoHeader.compression = 0;
-      this->rowStride = width * 3;
-      for (int i = 0; i < height; ++i)
-      {
-         this->dataGrid.push_back(std::vector<uint8_t>(this->rowStride, 255));
-      }
+   this->infoHeader.headerSize = sizeof(BMPImg::bitmapInfoHeader) + sizeof(BMPImg::bitmapColorHeader_s);
+   this->fileHeader.offset = sizeof(BMPImg::bitmapFileHeader_s) + sizeof(BMPImg::bitmapInfoHeader) + sizeof(BMPImg::bitmapColorHeader_s);
+   this->infoHeader.bitCount = 32;
+   this->infoHeader.compression = 3;
+   this->rowStride = width * 4;
 
-      uint32_t newStride = roundUp(this->rowStride, 4);
-      this->fileHeader.size = this->fileHeader.offset + this->rowStride * height + this->infoHeader.height * (newStride - this->rowStride);
-
+   for (size_t i = 0; i < height; ++i)
+   {
+      std::vector<uint8_t> tempVec(this->rowStride, 255);
+      if (transparency == true)
+      {
+         for (int i = 3; i < this->rowStride; i += 4)
+         {
+            tempVec[i] = 0;
+         }
+      }
+      this->dataGrid.push_back(tempVec);
    }
+   this->fileHeader.size = this->fileHeader.offset + this->rowStride * height;
 }
 
 
@@ -96,6 +114,11 @@ bool BMPImg::load(std::string fileName)
 
    //get file header
    filestream.read((char*)&this->fileHeader, sizeof(BMPImg::bitmapFileHeader_s));
+   if (this->fileHeader.type != 19788)
+   {
+      throw std::runtime_error("Error! Unrecognized file format.");
+   }
+
    filestream.read((char*)&this->infoHeader, sizeof(BMPImg::bitmapInfoHeader));
 
    // The bitmapColorHeader is used only for transparent images
@@ -141,7 +164,7 @@ bool BMPImg::load(std::string fileName)
       {
          std::vector<uint8_t> tempVec(this->infoHeader.width * this->infoHeader.bitCount / 8);
          filestream.read((char*)tempVec.data(), tempVec.size());
-         this->fileHeader.size += tempVec.size();
+         this->fileHeader.size += static_cast<uint32_t>(tempVec.size());
          this->dataGrid.emplace_back(tempVec);
       }
    }
@@ -158,9 +181,9 @@ bool BMPImg::load(std::string fileName)
          filestream.read((char*)paddingRow.data(), paddingRow.size());
          this->dataGrid.emplace_back(tempVec);
 
-         this->fileHeader.size += tempVec.size();
+         this->fileHeader.size += static_cast<uint32_t>(tempVec.size());
       }
-      this->fileHeader.size += this->infoHeader.height * paddingRow.size();
+      this->fileHeader.size += this->infoHeader.height * static_cast<uint32_t>(paddingRow.size());
 
    }
    //close stream
@@ -171,7 +194,7 @@ bool BMPImg::load(std::string fileName)
 
 void BMPImg::checkColorMasks()
 {
-   // Check if the pixel data is stored as BGRA and if the color space type is sRGB
+   // Check if the pixel data is stored as RrrColor::BGRA and if the color space type is sRGB
    BMPImg::bitmapColorHeader_s expected_color_header;
 
    if (expected_color_header.redMask != this->colorHeader.redMask ||
@@ -179,7 +202,7 @@ void BMPImg::checkColorMasks()
       expected_color_header.greenMask != this->colorHeader.greenMask ||
       expected_color_header.alphaMask != this->colorHeader.alphaMask)
    {
-      throw std::runtime_error("Unexpected color mask format! The program expects the pixel data to be in the BGRA format");
+      throw std::runtime_error("Unexpected color mask format! The program expects the pixel data to be in the RrrColor::BGRA format");
 
    }
    if (expected_color_header.colorSpaceType != this->colorHeader.colorSpaceType)
@@ -189,51 +212,37 @@ void BMPImg::checkColorMasks()
    }
 }
 
-void BMPImg::set(uint32_t x, uint32_t y, BGRA_s color)
+void BMPImg::set(uint32_t x, uint32_t y, const RrrColor::BGRA &color)
 {
    short posX = x * this->infoHeader.bitCount / 8;
+   this->dataGrid[y][posX + 0] = color.blue;
+   this->dataGrid[y][posX + 1] = color.green;
+   this->dataGrid[y][posX + 2] = color.red;
    if (this->infoHeader.bitCount == 32)
    {
-      this->dataGrid[y][posX + 0] = color.alpha;
-      this->dataGrid[y][posX + 1] = color.blue;
-      this->dataGrid[y][posX + 2] = color.green;
-      this->dataGrid[y][posX + 3] = color.red;
-
-   }
-   else
-   {
-      this->dataGrid[y][posX + 0] = color.blue;
-      this->dataGrid[y][posX + 1] = color.green;
-      this->dataGrid[y][posX + 2] = color.red;
+      this->dataGrid[y][posX + 3] = color.alpha;
    }
 }
 
-BGRA_s BMPImg::get(uint32_t x, uint32_t y)
+RrrColor::BGRA BMPImg::get(uint32_t x, uint32_t y)
 {
-   BGRA_s color;
+   RrrColor::BGRA color;
    short posX = x * this->infoHeader.bitCount / 8;
+   color.blue = this->dataGrid[y][posX + 0];
+   color.green = this->dataGrid[y][posX + 1];
+   color.red = this->dataGrid[y][posX + 2];
    if (this->infoHeader.bitCount == 32)
    {
-      color.alpha  = this->dataGrid[y][posX + 0];
-      color.blue   = this->dataGrid[y][posX + 1];
-      color.green  = this->dataGrid[y][posX + 2];
-      color.red    = this->dataGrid[y][posX + 3];
-
-   }
-   else
-   {
-      color.blue   = this->dataGrid[y][posX + 0];
-      color.green  = this->dataGrid[y][posX + 1];
-      color.red    = this->dataGrid[y][posX + 2];
+      color.alpha = this->dataGrid[y][posX + 3];
    }
    return (color);
 }
 
 void BMPImg::flipVertical()
 {
-   int width = getWidth();
-   int height = this->dataGrid.size();
-   for (int row = 0; row < height / 2; ++row)
+   size_t width = getWidth();
+   size_t height = this->dataGrid.size();
+   for (int row = 0; row < static_cast<int>(height) / 2; ++row)
    {
       for (int col = 0; col < this->dataGrid[row].size(); ++col)
       {
@@ -244,15 +253,15 @@ void BMPImg::flipVertical()
 
 void BMPImg::flipHorizontal()
 {
-   int bytes = this->infoHeader.bitCount / 8;
-   int height = this->dataGrid.size();
-   
-   for (int row = 0; row < height; ++row)
+   size_t bytes = this->infoHeader.bitCount / 8;
+   size_t height = this->dataGrid.size();
+
+   for (int row = 0; row < static_cast<int>(height); ++row)
    {
       for (int col = 0; col < this->infoHeader.width / 2; ++col)
       {
-         BGRA_s c1 = get(col, row);
-         BGRA_s c2 = get(this->infoHeader.width - 1 - col, row);
+         RrrColor::BGRA c1 = get(col, row);
+         RrrColor::BGRA c2 = get(this->infoHeader.width - 1 - col, row);
          set(col, row, c2);
          set(this->infoHeader.width - 1 - col, row, c1);
       }

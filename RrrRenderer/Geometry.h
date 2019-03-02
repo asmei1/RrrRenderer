@@ -10,7 +10,7 @@ struct Point_s
 class Geometry
 {
 public:
-   static void drawLine(BMPImg & img, Point_s start, Point_s end, BGRA_s color);
+   static void drawLine(BMPImg & img, Point_s start, Point_s end, const RrrColor::BGRA & color);
    static void test(BMPImg &img)
    {
       img.set(0, 0, { 255, 0, 0 });

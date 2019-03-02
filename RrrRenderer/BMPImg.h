@@ -2,27 +2,37 @@
 #include <iostream>
 #include <string>
 #include <vector>
-
-struct BGRA_s
+namespace RrrColor
 {
-   uint8_t blue;
-   uint8_t green;
-   uint8_t red;
-   uint8_t alpha;
-};
+   struct BGRA
+   {
+      uint8_t blue;
+      uint8_t green;
+      uint8_t red;
+      uint8_t alpha;
+   };
 
-struct HSV_s
-{
-   unsigned char hue;
-   unsigned char sat;
-   unsigned char val;
-};
+   //struct HSV
+   //{
+   //   unsigned char hue;
+   //   unsigned char sat;
+   //   unsigned char val;
+   //};
+
+   const static BGRA Black = RrrColor::BGRA{ 0, 0, 0, 255 };
+   const static BGRA White = RrrColor::BGRA{ 255, 255, 255, 255 };
+   const static BGRA Red = RrrColor::BGRA{ 255, 0, 255, 255 };
+   const static BGRA Green = RrrColor::BGRA{ 0, 255, 255, 255 };
+   const static BGRA Blue = RrrColor::BGRA{ 255, 255, 0, 255 };
+}
+
+
 
 class BMPImg
 {
    friend class Geometry;
 
-   #pragma pack(push, 1) //its for tighly pack structure
+#pragma pack(push, 1) //its for tighly pack structure
    struct bitmapFileHeader_s
    {
       uint16_t  type;             //must be equal to "BM" (or 19788). It declare that this is bmp file
@@ -31,9 +41,9 @@ class BMPImg
       uint16_t  bfReserved2;        //must be equal 0
       uint32_t  offset;          //specifies the offset from the beginning of the file to the bitmap data.
    };
-   #pragma pack(pop)
+#pragma pack(pop)
 
-   #pragma pack(push, 1) 
+#pragma pack(push, 1) 
    struct bitmapInfoHeader
    {
       uint32_t headerSize;             //Size of_header_st, standard value = 40
@@ -48,21 +58,22 @@ class BMPImg
       uint32_t biClrUsed;          //specifies the number of colors used in the bitmap, if set to zero the number of colors is calculated using the biBitCount member.
       uint32_t biClrImportant;     //specifies the number of color that are 'important' for the bitmap, if set to zero, all colors are important.
    };
-   #pragma pack(pop)
+#pragma pack(pop)
 
    struct bitmapColorHeader_s
    {
-      uint32_t redMask         = 0x00ff0000;       // Bit mask for the red channel
-      uint32_t greenMask       = 0x0000ff00;       // Bit mask for the green channel
-      uint32_t blueMask        = 0x000000ff;       // Bit mask for the blue channel
-      uint32_t alphaMask       = 0xff000000;       // Bit mask for the alpha channel
-      uint32_t colorSpaceType  = 0x73524742;       // Default "sRGB" (0x73524742)
+      uint32_t redMask = 0x00ff0000;       // Bit mask for the red channel
+      uint32_t greenMask = 0x0000ff00;       // Bit mask for the green channel
+      uint32_t blueMask = 0x000000ff;       // Bit mask for the blue channel
+      uint32_t alphaMask = 0xff000000;       // Bit mask for the alpha channel
+      uint32_t colorSpaceType = 0x73524742;       // Default "sRGB" (0x73524742)
       uint32_t unused[16]{ 0 };                     // Unused data for sRGB color space
-      
+
    };
 public:
    BMPImg(std::string fileName);
-   BMPImg(uint32_t width, uint32_t height, bool withAlpha = true);
+   BMPImg(uint32_t width, uint32_t height);
+   BMPImg(uint32_t width, uint32_t height, bool transparency);
    ~BMPImg();
 
 
@@ -85,8 +96,8 @@ public:
 
    void checkColorMasks();
 
-   void set(uint32_t x, uint32_t y, BGRA_s color);
-   BGRA_s get(uint32_t x, uint32_t y);
+   void set(uint32_t x, uint32_t y, const RrrColor::BGRA &color);
+   RrrColor::BGRA get(uint32_t x, uint32_t y);
 
    void flipVertical();
    void flipHorizontal();
