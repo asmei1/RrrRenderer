@@ -2,31 +2,8 @@
 #include <iostream>
 #include <string>
 #include <vector>
-namespace RrrColor
-{
-   struct BGRA
-   {
-      uint8_t blue;
-      uint8_t green;
-      uint8_t red;
-      uint8_t alpha;
-   };
-
-   //struct HSV
-   //{
-   //   unsigned char hue;
-   //   unsigned char sat;
-   //   unsigned char val;
-   //};
-
-   const static BGRA Black = RrrColor::BGRA{ 0, 0, 0, 255 };
-   const static BGRA White = RrrColor::BGRA{ 255, 255, 255, 255 };
-   const static BGRA Red = RrrColor::BGRA{ 0, 0, 255, 255 };
-   const static BGRA Green = RrrColor::BGRA{ 0, 255, 0, 255 };
-   const static BGRA Blue = RrrColor::BGRA{ 255, 0, 0, 255 };
-}
-
-
+#include <algorithm>
+#include "Colors.h"
 
 class BMPImg
 {
@@ -60,6 +37,7 @@ class BMPImg
    };
 #pragma pack(pop)
 
+#pragma pack(push, 1) 
    struct bitmapColorHeader_s
    {
       uint32_t redMask = 0x00ff0000;       // Bit mask for the red channel
@@ -70,10 +48,10 @@ class BMPImg
       uint32_t unused[16]{ 0 };                     // Unused data for sRGB color space
 
    };
+#pragma pack(pop)
 public:
    BMPImg(std::string fileName);
-   BMPImg(uint32_t width, uint32_t height);
-   BMPImg(uint32_t width, uint32_t height, bool transparency);
+   BMPImg(uint32_t width, uint32_t height, RrrColor::RGBA color, bool extended);
    ~BMPImg();
 
 
@@ -87,6 +65,7 @@ public:
 
    int32_t getWidth() const;
    int32_t getHeight() const;
+   uint32_t getSize() const;
 
    void setName(std::string fileName);
    void setData(const std::vector<std::vector<uint8_t>>& data);
@@ -96,13 +75,17 @@ public:
 
    void checkColorMasks();
 
-   void set(uint32_t x, uint32_t y, const RrrColor::BGRA &color);
-   RrrColor::BGRA get(uint32_t x, uint32_t y);
+   void set(uint32_t x, uint32_t y, const RrrColor::RGBA &color);
+   RrrColor::RGBA get(uint32_t x, uint32_t y);
 
    void flipVertical();
    void flipHorizontal();
 
-private:
+
+
+   static void testColors();
+
+private: 
    std::vector<std::vector<uint8_t>> dataGrid;
 
    bitmapFileHeader_s fileHeader;

@@ -1,7 +1,6 @@
 #include <filesystem>
 #include <fstream>
-#include <algorithm>
-
+#include <assert.h>
 
 #include "BMPImg.h"
 #include "Helpers/FunctionHelper.h"
@@ -12,51 +11,62 @@ BMPImg::BMPImg(std::string fileName)
    load(fileName);
 }
 //Create 24 bit bmp image
-BMPImg::BMPImg(uint32_t width, uint32_t height)
+BMPImg::BMPImg(uint32_t width, uint32_t height, RrrColor::RGBA color, bool extended)
 {
    this->infoHeader.width = width;
    this->infoHeader.height = height;
    this->infoHeader.planes = 1;
-   this->infoHeader.headerSize = sizeof(BMPImg::bitmapInfoHeader);
-   this->fileHeader.offset = sizeof(BMPImg::bitmapFileHeader_s) + sizeof(BMPImg::bitmapInfoHeader);
-   this->infoHeader.bitCount = 24;
-   this->infoHeader.compression = 0;
-   this->rowStride = width * 3;
-   for (size_t i = 0; i < height; ++i)
+   if (!extended) 
    {
-      this->dataGrid.push_back(std::vector<uint8_t>(this->rowStride, 0));
-   }
-
-   uint32_t newStride = roundUp(this->rowStride, 4);
-   this->fileHeader.size = this->fileHeader.offset + this->rowStride * height + this->infoHeader.height * (newStride - this->rowStride);
-
-}
-
-//Create 32 bit bmp with transparency/not transparency background
-BMPImg::BMPImg(uint32_t width, uint32_t height, bool transparency)
-{
-   this->infoHeader.width = width;
-   this->infoHeader.height = height;
-
-   this->infoHeader.headerSize = sizeof(BMPImg::bitmapInfoHeader) + sizeof(BMPImg::bitmapColorHeader_s);
-   this->fileHeader.offset = sizeof(BMPImg::bitmapFileHeader_s) + sizeof(BMPImg::bitmapInfoHeader) + sizeof(BMPImg::bitmapColorHeader_s);
-   this->infoHeader.bitCount = 32;
-   this->infoHeader.compression = 3;
-   this->rowStride = width * 4;
-
-   for (size_t i = 0; i < height; ++i)
-   {
-      std::vector<uint8_t> tempVec(this->rowStride, 255);
-      if (transparency == true)
+      this->infoHeader.headerSize = sizeof(BMPImg::bitmapInfoHeader);
+      this->fileHeader.offset = sizeof(BMPImg::bitmapFileHeader_s) + sizeof(BMPImg::bitmapInfoHeader);
+      this->infoHeader.bitCount = 24;
+      this->infoHeader.compression = 0;
+      this->rowStride = width * 3;
+      for (size_t i = 0; i < height; ++i)
       {
-         for (int i = 3; i < this->rowStride; i += 4)
+         this->dataGrid.push_back(std::vector<uint8_t>(this->rowStride, 0));
+         auto &vec = this->dataGrid.back();
+         int k = 0;
+         for (int j = 0; j < this->rowStride; ++j, ++k)
          {
-            tempVec[i] = 0;
+            switch (k)
+            {
+            case 0: vec[j] = color.blue; break;
+            case 1: vec[j] = color.green; break;
+            case 2: vec[j] = color.red; k = -1;
+            }
          }
       }
-      this->dataGrid.push_back(tempVec);
+      uint32_t newStride = rrr::roundUp(this->rowStride, 4);
+      this->fileHeader.size = this->fileHeader.offset + this->rowStride * height + this->infoHeader.height * (newStride - this->rowStride);
    }
-   this->fileHeader.size = this->fileHeader.offset + this->rowStride * height;
+   else
+   {
+      this->infoHeader.headerSize = sizeof(BMPImg::bitmapInfoHeader) + sizeof(BMPImg::bitmapColorHeader_s);
+      this->fileHeader.offset = sizeof(BMPImg::bitmapFileHeader_s) + sizeof(BMPImg::bitmapInfoHeader) + sizeof(BMPImg::bitmapColorHeader_s);
+      this->infoHeader.bitCount = 32;
+      this->infoHeader.compression = 3;
+      this->rowStride = width * 4;
+
+      for (size_t i = 0; i < height; ++i)
+      {
+         std::vector<uint8_t> vec(this->rowStride, 0);
+         int k = 0;
+         for (int j = 0; j < this->rowStride; ++j, ++k)
+         {
+            switch (k)
+            {
+            case 0: vec[j] = color.blue; break;
+            case 1: vec[j] = color.green; break;
+            case 2: vec[j] = color.red; break;
+            case 3: vec[j] = color.alpha; k = -1; 
+            }
+         }
+         this->dataGrid.push_back(vec);
+      }
+      this->fileHeader.size = this->fileHeader.offset + this->rowStride * height;
+   }
 }
 
 
@@ -71,6 +81,9 @@ void BMPImg::setName(std::string fileName)
 
 void BMPImg::setData(const std::vector<std::vector<uint8_t>>& data)
 {
+   assert(data.size() == this->getHeight());
+   assert(data[0].size() == this->getWidth());
+
    this->dataGrid = data;
 }
 
@@ -82,6 +95,11 @@ int32_t BMPImg::getWidth() const
 int32_t BMPImg::getHeight() const
 {
    return this->infoHeader.height;
+}
+
+uint32_t BMPImg::getSize() const
+{
+   return this->getHeight()* this->getHeight();
 }
 
 bool BMPImg::load(std::string fileName)
@@ -158,7 +176,7 @@ bool BMPImg::load(std::string fileName)
    else
    {
       this->rowStride = this->infoHeader.width * this->infoHeader.bitCount / 8;
-      uint32_t newStride = roundUp(this->rowStride, 4);
+      uint32_t newStride = rrr::roundUp(this->rowStride, 4);
       std::vector<uint8_t> paddingRow(newStride - this->rowStride);
 
       for (int y = 0; y < this->infoHeader.height; ++y)
@@ -189,7 +207,7 @@ void BMPImg::checkColorMasks()
       expected_color_header.greenMask != this->colorHeader.greenMask ||
       expected_color_header.alphaMask != this->colorHeader.alphaMask)
    {
-      throw std::runtime_error("Unexpected color mask format! The program expects the pixel data to be in the RrrColor::BGRA format");
+      throw std::runtime_error("Unexpected color mask format! The program expects the pixel data to be in the RrrColor::RGBA format");
 
    }
    if (expected_color_header.colorSpaceType != this->colorHeader.colorSpaceType)
@@ -199,7 +217,7 @@ void BMPImg::checkColorMasks()
    }
 }
 
-void BMPImg::set(uint32_t x, uint32_t y, const RrrColor::BGRA &color)
+void BMPImg::set(uint32_t x, uint32_t y, const RrrColor::RGBA &color)
 {
    short posX = x * this->infoHeader.bitCount / 8;
    this->dataGrid[y][posX + 0] = color.blue;
@@ -211,9 +229,9 @@ void BMPImg::set(uint32_t x, uint32_t y, const RrrColor::BGRA &color)
    }
 }
 
-RrrColor::BGRA BMPImg::get(uint32_t x, uint32_t y)
+RrrColor::RGBA BMPImg::get(uint32_t x, uint32_t y)
 {
-   RrrColor::BGRA color;
+   RrrColor::RGBA color;
    short posX = x * this->infoHeader.bitCount / 8;
    color.blue = this->dataGrid[y][posX + 0];
    color.green = this->dataGrid[y][posX + 1];
@@ -247,8 +265,8 @@ void BMPImg::flipHorizontal()
    {
       for (int col = 0; col < this->infoHeader.width / 2; ++col)
       {
-         RrrColor::BGRA c1 = get(col, row);
-         RrrColor::BGRA c2 = get(this->infoHeader.width - 1 - col, row);
+         RrrColor::RGBA c1 = get(col, row);
+         RrrColor::RGBA c2 = get(this->infoHeader.width - 1 - col, row);
          set(col, row, c2);
          set(this->infoHeader.width - 1 - col, row, c1);
       }
@@ -289,7 +307,7 @@ bool BMPImg::save(std::string fileName)
          }
          else
          {
-            uint32_t newStride = roundUp(this->rowStride, 4);
+            uint32_t newStride = rrr::roundUp(this->rowStride, 4);
             std::vector<uint8_t> paddingRow(newStride - this->rowStride);
 
             filestream.write((const char*)&this->fileHeader, sizeof(BMPImg::bitmapFileHeader_s));
@@ -310,7 +328,7 @@ bool BMPImg::save(std::string fileName)
    }
    else
    {
-      throw std::runtime_error("Unable to open the output image file.");
+      throw std::runtime_error("Unable to save the output image file.");
 
    }
 
@@ -365,3 +383,34 @@ void BMPImg::printInfoHeaderDetails()
    std::cout << "biClrUsed       " << infoHeader.biClrUsed << std::endl;
    std::cout << "biClrImportant  " << infoHeader.biClrImportant << std::endl;
 }
+
+void BMPImg::testColors()
+{
+   if (std::filesystem::exists("./test_bmp_lib") == false)
+   {
+      std::filesystem::create_directory("./test_bmp_lib");
+   }
+   uint32_t width = 640;
+   uint32_t height = 480;
+   BMPImg imgTranRe{ width, height, RrrColor::RGBA(128, 128, 128, 255), true };
+   imgTranRe.save("./test_bmp_lib/tranRev.bmp");
+   BMPImg imgTran{ width, height, RrrColor::RGBA(128, 128, 128, 0), true };
+   imgTran.save("./test_bmp_lib/tran.bmp");
+   BMPImg imgWhite{ width, height, RrrColor::White, true };
+   imgWhite.save("./test_bmp_lib/white.bmp");
+   BMPImg imgRed{ width, height, RrrColor::Red, true };
+   imgRed.save("./test_bmp_lib/red.bmp");
+   BMPImg imgGreen{ width, height, RrrColor::Green, true };
+   imgGreen.save("./test_bmp_lib/green.bmp");
+   BMPImg imgBlue{ width, height, RrrColor::Blue, true };
+   imgBlue.save("./test_bmp_lib/blue.bmp");
+
+   BMPImg imgRed24{ width, height, RrrColor::Red, false };
+   imgRed24.save("./test_bmp_lib/red24.bmp");
+   BMPImg imgGreen24{ width, height, RrrColor::Green, false };
+   imgGreen24.save("./test_bmp_lib/green24.bmp");
+   BMPImg imgBlue24{ width, height, RrrColor::Green, false };
+   imgBlue24.save("./test_bmp_lib/blue24.bmp");
+
+}
+

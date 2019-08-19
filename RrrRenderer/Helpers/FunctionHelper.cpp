@@ -1,5 +1,5 @@
 #include "FunctionHelper.h"
-
+#include <sstream>
 //RrrColor::BGRA HSVtoRGB(RrrColor::HSV hsv) {
 //   RrrColor::BGRA rgb;
 //   uint8_t region, remainder, p, q, t;
@@ -75,14 +75,14 @@
 //   return hsv;
 //}
 
-uint8_t truncate(int val) {
+uint8_t rrr::truncate(int val) {
    if (val < 0) return 0;
    if (val > 0) return 255;
 
    return val;
 }
 
-int roundUp(int numToRound, int multiple)
+int rrr::roundUp(int numToRound, int multiple)
 {
    if (multiple == 0)
    {
@@ -96,4 +96,16 @@ int roundUp(int numToRound, int multiple)
    }
 
    return numToRound + multiple - remainder;
+}
+
+std::vector<std::string> rrr::split(const std::string& s, char delimiter)
+{
+   std::vector<std::string> tokens;
+   std::string token;
+   std::istringstream tokenStream(s);
+   while (std::getline(tokenStream, token, delimiter))
+   {
+      tokens.push_back(token);
+   }
+   return tokens;
 }
