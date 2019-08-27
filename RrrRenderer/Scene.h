@@ -12,8 +12,10 @@ public:
    std::vector<ObjectUptr>& getObjects();
    void createSphere(const arma::vec3& _position, float _radius, RrrColor::RGBA _color = RrrColor::randomColor());
 
-   static inline arma::mat allObjectsPositionMatrix;
+   void transformWorld(const arma::dmat44& transformMatrix);
+
 private:
+   arma::mat allObjectsPositionMatrix;
    std::vector<ObjectUptr> objects;
 };
 

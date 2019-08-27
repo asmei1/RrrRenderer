@@ -50,7 +50,7 @@ void Scene::createSphere(const arma::vec3& _position, float _radius, RrrColor::R
    this->objects.push_back(std::move(sphere));
 }
 
-void Scene::transformWorld(const arma::dvec4& transformMatrix)
+void Scene::transformWorld(const arma::dmat44& transformMatrix)
 {
    this->allObjectsPositionMatrix = transformMatrix * this->allObjectsPositionMatrix;
 }

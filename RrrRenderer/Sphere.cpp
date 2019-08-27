@@ -109,4 +109,5 @@ arma::dvec3 Sphere::getPositionVec3() const
 
 void Sphere::move(const arma::vec3& move)
 {
+   assert(false && "Not implemented yet");
 }

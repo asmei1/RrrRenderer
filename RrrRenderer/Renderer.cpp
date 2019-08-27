@@ -42,8 +42,8 @@ void Renderer::prepareScene()
    std::uniform_real_distribution<> dis(0, 1);
 
 
-   this->scene.createSphere(arma::vec3{ 0, 0, -2 }, 0.7);
-   this->scene.createSphere(arma::vec3{ -0.8, 0, -2 }, 0.7);
+   this->scene.createSphere(arma::vec3{ 0, 0, -6 }, 0.7);
+   this->scene.createSphere(arma::vec3{ -0.8, 0, -5 }, 0.7);
 
 }
 
@@ -80,7 +80,9 @@ void Renderer::render()
    }
    img.flipVertical();
    img.save(std::string("./test/renderTriangle") + /*std::to_string(counter++) +*/ ".bmp");
-   
+
+
+   std::cout << "Number of rays: " << Ray::counter << std::endl;
 }
 
 inline

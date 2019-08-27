@@ -14,11 +14,6 @@ public:
    };
 
    ~Camera() = default;
-   //only temporary method
-   void mult(const arma::dmat44& m)
-   {
-      this->viewMatrix = this->viewMatrix * m;
-   }
 
    arma::dmat44 getViewMatrix() const
    {
