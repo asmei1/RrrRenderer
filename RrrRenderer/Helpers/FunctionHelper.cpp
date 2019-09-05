@@ -109,3 +109,54 @@ std::vector<std::string> rrr::split(const std::string& s, char delimiter)
    }
    return tokens;
 }
+
+bool rrr::solveQuadratic(const float& a, const float& b, const float& c, float& x0, float& x1)
+{
+   const float discr = b * b - 4 * a * c;
+   if (discr < 0)
+   {
+      return false;
+   }
+   if (discr == 0)
+   {
+      x0 = x1 = -0.5f * b / a;
+   }
+   else
+   {
+      float q = (b > 0) ?
+         -0.5f * (b + sqrt(discr)) :
+         -0.5f * (b - sqrt(discr));
+      x0 = q / a;
+      x1 = c / q;
+   }
+
+   return true;
+}
+
+void rrr::multVecMatrixCM(const arma::dmat44& x, const arma::vec4& src, arma::vec3& dst)
+{
+   arma::vec4 temp = x * src;
+   if (temp(3) != 1 && temp(3) != 0) //if w != 1
+   {
+      dst.x() = temp(0) / temp(3);
+      dst.y() = temp(1) / temp(3);
+      dst.z() = temp(2) / temp(3);
+   }
+   else
+   {
+      dst.x() = temp(0);
+      dst.y() = temp(1);
+      dst.z() = temp(2);
+   }
+}
+
+void rrr::multDirMatrixCM(const arma::dmat44& x, const arma::vec3& src, arma::vec3& dst)
+{
+   double a, b, c;
+   a = src(0) * x(0, 0) + src(1) * x(1, 0) + src(2) * x(2, 0);
+   b = src(0) * x(0, 1) + src(1) * x(1, 1) + src(2) * x(2, 1);
+   c = src(0) * x(0, 2) + src(1) * x(1, 2) + src(2) * x(2, 2);
+   dst.x() = a;
+   dst.y() = b;
+   dst.z() = c;
+}

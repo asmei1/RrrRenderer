@@ -4,6 +4,7 @@
 class Scene
 {
 public:
+   Scene();
    //void runRenderingScene();
 
   // void addObjectsToScene(const std::vector<ObjectUptr>& objects);

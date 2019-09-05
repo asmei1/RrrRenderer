@@ -6,7 +6,8 @@
 class Settings
 {
 public:
-   Settings(uint32_t _width, uint32_t _height, float _fov) : width(_width), height(_height), fov(_fov) {};
+   Settings(uint32_t _width, uint32_t _height, float _fov, const RrrColor::RGBA& _backgroundColor) 
+   : width(_width), height(_height), fov(_fov), backgroundColor(_backgroundColor) {};
    ~Settings() = default;
 
    void setWidth(uint32_t width) noexcept
@@ -44,11 +45,16 @@ public:
       return this->width / (float)this->height;
    }
 
+   RrrColor::RGBA getBackgroundColor() const noexcept
+   {
+      return this->backgroundColor;
+   }
 
 private:
    uint32_t width;
    uint32_t height;
    float fov;
+   RrrColor::RGBA backgroundColor; 
 
 };
 

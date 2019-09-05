@@ -21,6 +21,6 @@ public:
 private:
    Camera camera;
    Scene scene;
-   Settings settings{840, 680, 60};
+   Settings settings{840, 680, 60, RrrColor::Black};
 };
 

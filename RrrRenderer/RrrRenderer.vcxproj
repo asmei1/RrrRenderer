@@ -160,9 +160,11 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="BMPImg.cpp" />
+    <ClCompile Include="DirectionLight.cpp" />
     <ClCompile Include="Helpers\FunctionHelper.cpp" />
     <ClCompile Include="Object_A.cpp" />
     <ClCompile Include="ObjModel.cpp" />
+    <ClCompile Include="PointLight.cpp" />
     <ClCompile Include="Ray.cpp" />
     <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="RrrRenderer.cpp" />
@@ -174,10 +176,13 @@
     <ClInclude Include="BMPImg.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="Colors.h" />
+    <ClInclude Include="DirectionLight.h" />
     <ClInclude Include="Helpers\FunctionHelper.h" />
     <ClInclude Include="Helpers\timer.hpp" />
+    <ClInclude Include="Light_A.h" />
     <ClInclude Include="Object_A.h" />
     <ClInclude Include="ObjModel.h" />
+    <ClInclude Include="PointLight.h" />
     <ClInclude Include="Ray.h" />
     <ClInclude Include="Renderer.h" />
     <ClInclude Include="Scene.h" />

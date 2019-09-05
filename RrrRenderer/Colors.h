@@ -1,4 +1,5 @@
 #pragma once
+#include <armadillo>
 #define PI 3.14159265359
 
 namespace RrrColor
@@ -11,6 +12,15 @@ namespace RrrColor
       uint8_t alpha;
       RGBA(uint8_t _red = 0, uint8_t _green = 0, uint8_t _blue = 0, uint8_t _alpha = 255)
          : red(_red), green(_green), blue(_blue), alpha(_alpha) {}
+
+      arma::vec3 toArmaVec() const
+      {
+         return arma::vec3{ 
+            static_cast<double>(this->red),
+            static_cast<double>(this->green),
+            static_cast<double>(this->blue) 
+         };
+      }
    };
 
    //struct HSV

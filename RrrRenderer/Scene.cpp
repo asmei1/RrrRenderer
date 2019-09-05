@@ -31,6 +31,11 @@
 //   this->objects.insert(this->objects.end(), objects.begin(), objects.end());
 //}
 //
+Scene::Scene()
+{
+   Object_A::setAllObjectsPositionMatrix(&this->allObjectsPositionMatrix);
+}
+
 void Scene::addObjectToScene(ObjectUptr object)
 {
    this->objects.push_back(std::move(object));
@@ -46,7 +51,7 @@ void Scene::createSphere(const arma::vec3& _position, float _radius, RrrColor::R
    int positionIndex = this->allObjectsPositionMatrix.n_cols;
    this->allObjectsPositionMatrix.insert_cols(positionIndex, arma::dvec4{ _position.x(), _position.y(), _position.z(), 1 });
 
-   ObjectUptr sphere(new Sphere(this->allObjectsPositionMatrix, positionIndex, _radius, _color));
+   ObjectUptr sphere(new Sphere(positionIndex, _radius, _color));
    this->objects.push_back(std::move(sphere));
 }
 
