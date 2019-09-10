@@ -5,9 +5,9 @@
 //   uint8_t region, remainder, p, q, t;
 //
 //   if (hsv.sat == 0) {
-//      rgb.red = hsv.val;
-//      rgb.green = hsv.val;
-//      rgb.blue = hsv.val;
+//      rgb.r = hsv.val;
+//      rgb.g = hsv.val;
+//      rgb.b = hsv.val;
 //      return rgb;
 //   }
 //   region = hsv.hue / 43;
@@ -20,22 +20,22 @@
 //   switch (region)
 //   {
 //   case 0:
-//      rgb.red = hsv.val; rgb.green = t; rgb.blue = p;
+//      rgb.r = hsv.val; rgb.g = t; rgb.b = p;
 //      break;
 //   case 1:
-//      rgb.red = q; rgb.green = hsv.val; rgb.blue = p;
+//      rgb.r = q; rgb.g = hsv.val; rgb.b = p;
 //      break;
 //   case 2:
-//      rgb.red = p; rgb.green = hsv.val; rgb.blue = t;
+//      rgb.r = p; rgb.g = hsv.val; rgb.b = t;
 //      break;
 //   case 3:
-//      rgb.red = p; rgb.green = q; rgb.blue = hsv.val;
+//      rgb.r = p; rgb.g = q; rgb.b = hsv.val;
 //      break;
 //   case 4:
-//      rgb.red = t; rgb.green = p; rgb.blue = hsv.val;
+//      rgb.r = t; rgb.g = p; rgb.b = hsv.val;
 //      break;
 //   default:
-//      rgb.red = hsv.val; rgb.green = p; rgb.blue = q;
+//      rgb.r = hsv.val; rgb.g = p; rgb.b = q;
 //      break;
 //   }
 //
@@ -47,8 +47,8 @@
 //   RrrColor::HSV hsv;
 //   unsigned char rgbMin, rgbMax;
 //
-//   rgbMin = rgb.red < rgb.green ? (rgb.red < rgb.blue ? rgb.red : rgb.blue) : (rgb.green < rgb.blue ? rgb.green : rgb.blue);
-//   rgbMax = rgb.red > rgb.green ? (rgb.red > rgb.blue ? rgb.red : rgb.blue) : (rgb.green > rgb.blue ? rgb.green : rgb.blue);
+//   rgbMin = rgb.r < rgb.g ? (rgb.r < rgb.b ? rgb.r : rgb.b) : (rgb.g < rgb.b ? rgb.g : rgb.b);
+//   rgbMax = rgb.r > rgb.g ? (rgb.r > rgb.b ? rgb.r : rgb.b) : (rgb.g > rgb.b ? rgb.g : rgb.b);
 //
 //   hsv.val = rgbMax;
 //   if (hsv.val == 0)
@@ -65,15 +65,42 @@
 //      return hsv;
 //   }
 //
-//   if (rgbMax == rgb.red)
-//      hsv.hue = 0 + 43 * (rgb.green - rgb.blue) / (rgbMax - rgbMin);
-//   else if (rgbMax == rgb.green)
-//      hsv.hue = 85 + 43 * (rgb.blue - rgb.red) / (rgbMax - rgbMin);
+//   if (rgbMax == rgb.r)
+//      hsv.hue = 0 + 43 * (rgb.g - rgb.b) / (rgbMax - rgbMin);
+//   else if (rgbMax == rgb.g)
+//      hsv.hue = 85 + 43 * (rgb.b - rgb.r) / (rgbMax - rgbMin);
 //   else
-//      hsv.hue = 171 + 43 * (rgb.red - rgb.green) / (rgbMax - rgbMin);
+//      hsv.hue = 171 + 43 * (rgb.r - rgb.g) / (rgbMax - rgbMin);
 //
 //   return hsv;
 //}
+
+std::vector<std::string> rrr::split(const std::string& str, const std::string& delimiter, bool includeEmptyTokens)
+{
+   std::vector<std::string> rV;
+   size_t pos = 0;
+   size_t prev = 0;
+   std::string token;
+
+   while ((pos = str.find(delimiter, prev)) != std::string::npos)
+   {
+      token = str.substr(prev, pos - prev);
+      if (false == token.empty())
+      {
+         rV.push_back(token);
+      }
+      else if (true == includeEmptyTokens)
+      {
+         rV.push_back(token);
+      }
+
+      prev = pos + delimiter.length();
+   }
+   //take last token to rV
+   rV.push_back(str.substr(prev));
+
+   return rV;
+}
 
 uint8_t rrr::truncate(int val) {
    if (val < 0) return 0;
@@ -160,3 +187,115 @@ void rrr::multDirMatrixCM(const arma::dmat44& x, const arma::vec3& src, arma::ve
    dst.y() = b;
    dst.z() = c;
 }
+
+arma::vec3 rrr::reflect(const arma::vec3& N, const arma::vec3& I)
+{
+   return I - 2 * arma::dot(I, N) * N;
+}
+
+
+arma::vec3 rrr::refract(const arma::vec3& N, const arma::vec3& I, const float& ior)
+{
+   //initialize return value
+   arma::vec3 rV;
+   rV.zeros();
+   //cosine of the angle between the surface normal and the incident ray direction
+   float cosi = static_cast<float>(std::clamp(arma::dot(I, N), -1., 1.));
+   //refraction indication of first medium, for simplyfied, its 1 (as air or vacuum)
+   float etai = 1;
+   //refraction indication of second medium (of object that ray hit or its about to leave)
+   float etat = ior;
+   arma::vec3 n = N;
+
+   if (cosi < 0)
+   {
+      //Outside of the surface, cos(O) should be positive
+      cosi = -cosi;
+   }
+   else
+   {
+      // we are inside the surface, cos(theta) is already positive but reverse normal direction
+      n = -N;
+      std::swap(etai, etat);
+   }
+
+   float eta = etai / etat;
+   float k = 1 - etat * eta * (1 - cosi * cosi);
+
+   //check if its total internal reflection. There is no refraction in this case
+   if (k >= 0)
+   {
+      rV = eta * I * (eta * cosi - std::sqrt(k)) % n;
+   }
+
+   return rV;
+}
+
+float rrr::fresnel(const arma::vec3& I, const arma::vec3& N, const float& ior)
+{
+   //initialize return value
+   float kr;
+
+   //cosine of the angle between the surface normal and the incident ray direction
+   float cosi = static_cast<float>(std::clamp(arma::dot(I, N), -1., 1.));
+   //refraction indication of first medium, for simplyfied, its 1 (as air or vacuum)
+   float etai = 1;
+   //refraction indication of second medium (of object that ray hit or its about to leave)
+   float etat = ior;
+
+   if(cosi > 0)
+   {
+      std::swap(etai, etat);
+   }
+   //compute sini with Snell's law
+   float sint = etai / etat * std::sqrtf(std::max(0.f, 1 - cosi * cosi));
+   if (sint >= 1)
+   {
+      kr = 1;
+   }
+   else
+   {
+      float cost = std::sqrtf(std::max(0.f, 1 - sint * sint));
+
+      cosi = std::fabs(cosi);
+
+      float Rs = ((etat * cosi) - (etai * cost)) / ((etat * cosi) + (etai * cost));
+      float Rp = ((etai * cosi) - (etat * cost)) / ((etai * cosi) + (etat * cost));
+      kr = (Rs * Rs + Rp * Rp) / 2;
+
+      //std::cout << I.x() << " " << I.y() << " " << I.z() << " " << N.x() << " " << N.y() << " " << N.z() << " " << std::endl;
+      //std::cout << sint << " " << cost << " " << cosi << " " << Rs << " " << Rp << "" << kr << std::endl;
+
+   }
+
+   return kr;
+}
+
+void rrr::ltrim(std::string& s)
+{
+   s.erase(s.begin(),
+      std::find_if(s.begin(), s.end(), [](int ch)
+         {
+            return !std::isspace(ch);
+         })
+   );
+}
+
+void rrr::rtrim(std::string& s)
+{
+   s.erase(
+      std::find_if(s.rbegin(), s.rend(), [](int ch)
+         {
+            return !std::isspace(ch);
+         }).base(), s.end());
+}
+
+void rrr::trim(std::string& s)
+{
+   ltrim(s);
+   rtrim(s);
+}
+
+
+
+

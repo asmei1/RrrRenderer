@@ -32,9 +32,9 @@ BMPImg::BMPImg(uint32_t width, uint32_t height, RrrColor::RGBA color, bool exten
          {
             switch (k)
             {
-            case 0: vec[j] = color.blue; break;
-            case 1: vec[j] = color.green; break;
-            case 2: vec[j] = color.red; k = -1;
+            case 0: vec[j] = color.b; break;
+            case 1: vec[j] = color.g; break;
+            case 2: vec[j] = color.r; k = -1;
             }
          }
       }
@@ -57,10 +57,10 @@ BMPImg::BMPImg(uint32_t width, uint32_t height, RrrColor::RGBA color, bool exten
          {
             switch (k)
             {
-            case 0: vec[j] = color.blue; break;
-            case 1: vec[j] = color.green; break;
-            case 2: vec[j] = color.red; break;
-            case 3: vec[j] = color.alpha; k = -1; 
+            case 0: vec[j] = color.b; break;
+            case 1: vec[j] = color.g; break;
+            case 2: vec[j] = color.r; break;
+            case 3: vec[j] = color.a; k = -1; 
             }
          }
          this->dataGrid.push_back(vec);
@@ -220,12 +220,12 @@ void BMPImg::checkColorMasks()
 void BMPImg::set(uint32_t x, uint32_t y, const RrrColor::RGBA &color)
 {
    short posX = x * this->infoHeader.bitCount / 8;
-   this->dataGrid[y][posX + 0] = color.blue;
-   this->dataGrid[y][posX + 1] = color.green;
-   this->dataGrid[y][posX + 2] = color.red;
+   this->dataGrid[y][posX + 0] = color.b;
+   this->dataGrid[y][posX + 1] = color.g;
+   this->dataGrid[y][posX + 2] = color.r;
    if (this->infoHeader.bitCount == 32)
    {
-      this->dataGrid[y][posX + 3] = color.alpha;
+      this->dataGrid[y][posX + 3] = color.a;
    }
 }
 
@@ -233,12 +233,12 @@ RrrColor::RGBA BMPImg::get(uint32_t x, uint32_t y)
 {
    RrrColor::RGBA color;
    short posX = x * this->infoHeader.bitCount / 8;
-   color.blue = this->dataGrid[y][posX + 0];
-   color.green = this->dataGrid[y][posX + 1];
-   color.red = this->dataGrid[y][posX + 2];
+   color.b = this->dataGrid[y][posX + 0];
+   color.g = this->dataGrid[y][posX + 1];
+   color.r = this->dataGrid[y][posX + 2];
    if (this->infoHeader.bitCount == 32)
    {
-      color.alpha = this->dataGrid[y][posX + 3];
+      color.a = this->dataGrid[y][posX + 3];
    }
    return (color);
 }
@@ -399,11 +399,11 @@ void BMPImg::testColors()
    BMPImg imgWhite{ width, height, RrrColor::White, true };
    imgWhite.save("./test_bmp_lib/white.bmp");
    BMPImg imgRed{ width, height, RrrColor::Red, true };
-   imgRed.save("./test_bmp_lib/red.bmp");
+   imgRed.save("./test_bmp_lib/r.bmp");
    BMPImg imgGreen{ width, height, RrrColor::Green, true };
-   imgGreen.save("./test_bmp_lib/green.bmp");
+   imgGreen.save("./test_bmp_lib/g.bmp");
    BMPImg imgBlue{ width, height, RrrColor::Blue, true };
-   imgBlue.save("./test_bmp_lib/blue.bmp");
+   imgBlue.save("./test_bmp_lib/b.bmp");
 
    BMPImg imgRed24{ width, height, RrrColor::Red, false };
    imgRed24.save("./test_bmp_lib/red24.bmp");

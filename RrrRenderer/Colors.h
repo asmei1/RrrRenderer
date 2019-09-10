@@ -6,20 +6,44 @@ namespace RrrColor
 {
    struct RGBA
    {
-      uint8_t blue;
-      uint8_t green;
-      uint8_t red;
-      uint8_t alpha;
+      uint8_t b;
+      uint8_t g;
+      uint8_t r;
+      uint8_t a;
       RGBA(uint8_t _red = 0, uint8_t _green = 0, uint8_t _blue = 0, uint8_t _alpha = 255)
-         : red(_red), green(_green), blue(_blue), alpha(_alpha) {}
+         : r(_red), g(_green), b(_blue), a(_alpha) {}
 
-      arma::vec3 toArmaVec() const
+      static RGBA fromArmaVec3F(const arma::vec3& color)
       {
-         return arma::vec3{ 
-            static_cast<double>(this->red),
-            static_cast<double>(this->green),
-            static_cast<double>(this->blue) 
+         return RGBA{ 
+            static_cast<uint8_t>(std::clamp(color.x(), 0., 1.) * 255),
+            static_cast<uint8_t>(std::clamp(color.y(), 0., 1.) * 255),
+            static_cast<uint8_t>(std::clamp(color.z(), 0., 1.) * 255),
          };
+      }
+      static RGBA fromArmaVec4F(const arma::vec4& color)
+      {
+         return RGBA{ 
+            static_cast<uint8_t>(std::clamp(color.x(), 0., 1.) * 255),
+            static_cast<uint8_t>(std::clamp(color.y(), 0., 1.) * 255),
+            static_cast<uint8_t>(std::clamp(color.z(), 0., 1.) * 255),
+            static_cast<uint8_t>(std::clamp(color.w(), 0., 1.) * 255),
+         };
+      }
+
+      arma::vec3 toArmaVec3F() const
+      {
+         return { this->r / 255., this->g / 255., this->b / 255. };
+      }
+
+      arma::vec4 toArmaVec4F() const
+      {
+         return { this->r / 255., this->g / 255., this->b / 255., this->a / 255. };
+      }
+
+      std::string getColorAsStr() const
+      {
+         return (std::string("R: ") + std::to_string(this->r) + std::string(" G: ") + std::to_string(this->g) + std::string(" B: ") + std::to_string(this->b) + std::string(" A: ") + std::to_string(this->a));
       }
    };
 

@@ -167,7 +167,7 @@
     <ClCompile Include="PointLight.cpp" />
     <ClCompile Include="Ray.cpp" />
     <ClCompile Include="Renderer.cpp" />
-    <ClCompile Include="RrrRenderer.cpp" />
+    <ClCompile Include="main.cpp" />
     <ClCompile Include="Scene.cpp" />
     <ClCompile Include="Settings.cpp" />
     <ClCompile Include="Sphere.cpp" />
@@ -179,7 +179,9 @@
     <ClInclude Include="DirectionLight.h" />
     <ClInclude Include="Helpers\FunctionHelper.h" />
     <ClInclude Include="Helpers\timer.hpp" />
+    <ClInclude Include="IntersectionInfo.h" />
     <ClInclude Include="Light_A.h" />
+    <ClInclude Include="Material.h" />
     <ClInclude Include="Object_A.h" />
     <ClInclude Include="ObjModel.h" />
     <ClInclude Include="PointLight.h" />

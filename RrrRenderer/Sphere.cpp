@@ -58,17 +58,24 @@ bool Sphere::intersect(const Ray& ray, float& t) const
    return true;
 }
 
-void Sphere::getSurfaceData(const arma::vec3& hitPoint, arma::vec3& viewDirection, const arma::vec2& uv, arma::vec3& hitNormal, arma::vec2& hitTextureCoordinate) const
+std::string Sphere::getDebugInfo() const
+{
+   arma::vec3 pos = this->getPositionVec3();
+   return (std::string("Sphere: pos: (") + "x: " + std::to_string(pos.x()) + " y: " + std::to_string(pos.y()) + " z: " + std::to_string(pos.z()) + ")" +
+      " Color: (" + this->getColor().getColorAsStr() + ") radius: " + std::to_string(this->radius));
+}
+
+void Sphere::getSurfaceData(const arma::vec3& hitPoint, const arma::vec3& viewDirection, arma::vec3& hitNormal, arma::vec2& hitTextureCoordinate) const
 {
    //get normal
-   viewDirection = arma::normalise(hitPoint - this->getPositionVec3());
+   hitNormal = arma::normalise(hitPoint - this->getPositionVec3());
    // In this particular case, the normal is simular to a point on a unit sphere
    // centred around the origin. We can thus use the normal coordinates to compute
    // the spherical coordinates of pHit.
    // atan2 returns a value in the range [-pi, pi] and we need to remap it to range [0, 1]
    // acosf returns a value in the range [0, pi] and we also need to remap it to the range [0, 1]
-   hitTextureCoordinate.x() = (1 + atan2(viewDirection.z(), viewDirection.x()) / PI) * 0.5;
-   hitTextureCoordinate.y() = static_cast<double>(acosf(viewDirection.y()) / PI);
+   hitTextureCoordinate.x() = (1 + atan2(hitNormal.z(), hitNormal.x()) / PI) * 0.5;
+   hitTextureCoordinate.y() = static_cast<double>(acosf(hitNormal.y()) / PI);
 }
 
 arma::dvec4 Sphere::getPositionVec4() const

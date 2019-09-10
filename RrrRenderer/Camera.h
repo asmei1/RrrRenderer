@@ -1,6 +1,7 @@
 #pragma once
 #include <Armadillo>
 #include "Colors.h"
+#include "Helpers/FunctionHelper.h"
 
 class Camera
 {
@@ -34,19 +35,20 @@ public:
                                        {right.y(), upTemp.y(), forward.y(), 0},
                                        {right.z(), upTemp.z(), forward.z(), 0},
                                        {-arma::dot(right, this->eye), -arma::dot(upTemp, this->eye), -arma::dot(forward, this->eye), 1} };
-   
+
       return this->viewMatrix;
    }
 
    arma::dmat44 lookAt(const arma::dvec3& viewDirection)
    {
-      return lookAt(arma::dvec3{0,0,0}, viewDirection);
+      return lookAt(arma::dvec3{ 0,0,0 }, viewDirection);
    }
 
    arma::dvec3 getEyePosition() const
    {
       return this->eye;
    }
+
 
 private:
    arma::dvec3 eye;
