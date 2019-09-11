@@ -83,14 +83,16 @@ void Renderer::prepareScene(const std::vector<std::string>& sceneDescription)
 
    const std::string backgroundProp = "backgroundColor";
    const std::string sizeProp = "size";
+   const std::string fovProp = "fov";
 
    const std::string distantLightObj = "disLight";
+   const std::string pointLightObj = "pointLight";
    const std::string intensityObj = "intensity";
 
    const std::string sphereObj = "sph";
    const std::string radiusObj = "radius";
 
-   const std::string coordinatesObj = "pos";
+   const std::string positionObj = "pos";
    const std::string directionObj = "dir";
    const std::string materialObj = "mat";
    const std::string colorObj = "color";
@@ -167,7 +169,7 @@ void Renderer::prepareScene(const std::vector<std::string>& sceneDescription)
          float radius = 1;
          for (size_t i = 1; i < tokens.size(); ++i)
          {
-            if (coordinatesObj == tokens[i])
+            if (positionObj == tokens[i])
             {
                coords = parseVec3(tokens, i);
 
@@ -175,19 +177,7 @@ void Renderer::prepareScene(const std::vector<std::string>& sceneDescription)
             }
             else if (materialObj == tokens[i])
             {
-               std::string type = tokens[i + 1];
-               if ("testing" == type)
-               {
-                  material = &testingMaterial;
-               }
-               else if ("glass" == type)
-               {
-                  material = &GlassMaterial;
-               }
-               else if ("reflect" == type)
-               {
-                  material = &ReflectiveMaterial;
-               }
+               material = Material::getMaterialFromString(tokens[i + 1]);
 
                i += 1;
             }
@@ -239,11 +229,47 @@ void Renderer::prepareScene(const std::vector<std::string>& sceneDescription)
 
          this->scene.createDirectionalLight(dir, intensity, color);
       }
+      else if (pointLightObj == tokens[0])
+      {
+         RrrColor::RGBA color = RrrColor::White;
+         arma::vec3 pos;
+         pos.zeros();
+
+         float intensity = 1;
+
+         for (size_t i = 1; i < tokens.size(); ++i)
+         {
+            if (positionObj == tokens[i])
+            {
+               pos = parseVec3(tokens, i);
+
+               i += 3;
+            }
+            else if (intensityObj == tokens[i])
+            {
+               intensity = std::stof(tokens[i + 1]);
+
+               i += 1;
+            }
+            else if (colorObj == tokens[i])
+            {
+               color = parseRrrColor(tokens, i);
+            }
+         }
+
+         this->scene.createPointLight(pos, intensity, color);
+      }
       else if (backgroundProp == tokens[0])
       {
          RrrColor::RGBA bgColor = parseRrrColor(tokens);
 
          this->settings.setBackgroundColor(bgColor);
+      }
+      else if (fovProp == tokens[0])
+      {
+         float fov = std::stof(tokens[1]);
+
+         this->settings.setFOV(fov);
       }
       else if (sizeProp == tokens[0])
       {
@@ -275,6 +301,7 @@ void Renderer::prepareScene(const std::vector<std::string>& sceneDescription)
       }
    }
 
+   //its moved further, after parsing rest of file, because it should be called in proper way
    if(camViewDirVal)
    {
       this->camera.lookAt(*camViewDirVal);
@@ -356,76 +383,6 @@ arma::vec3 Renderer::castRay(const arma::vec3& orig, const arma::vec3& dir, cons
    }
    else
    {
-      //IntersectionInfo interObjInfo;
-      //if (trace({ orig, dir, Ray::RayType::PRIMARY }, objects, interObjInfo))
-      //{
-      //   //shaded point
-      //   arma::vec3 hitPoint = orig + dir * interObjInfo.tNear;
-
-      //   arma::vec3 hitNormal{ 0, 0, 0 };
-      //   arma::vec3 viewingDirection{ 0, 0, 0 };
-      //   arma::vec2 hitTextureCoordinates{ 0, 0 };
-
-      //   interObjInfo.hitObject->getSurfaceData(hitPoint, viewingDirection, hitNormal, hitTextureCoordinates);
-
-      //   for (const auto& light : lights)
-      //   {
-      //      ShadingInfo shInfo = light->getLightInfo(hitPoint);
-      //      IntersectionInfo shadowIntersectionInfo;
-
-      //      //else
-      //      //if (false == trace({ hitPoint + (hitNormal * this->settings.getBias()), -shInfo.lightDirection, Ray::RayType::SHADOW }, objects, shadowIntersectionInfo))
-      //      
-
-      //      if (true == interObjInfo.hitObject->material->isReflective() && true == interObjInfo.hitObject->material->isRefractive())
-      //      {
-      //         arma::vec3 refractionColor;
-      //         refractionColor.zeros();
-
-      //         float kr;
-      //         rrr::fresnel(viewingDirection, hitNormal, interObjInfo.hitObject->material->refractive, kr);
-      //         bool outside = arma::dot(viewingDirection, hitNormal) > 0;
-      //         arma::vec3 bias = this->settings.getBias() * hitNormal;
-
-      //         if(kr < 1)
-      //         {
-      //            arma::vec3 refractionDir = rrr::refract(viewingDirection, hitNormal, interObjInfo.hitObject->material->refractive);
-      //            
-      //            arma::vec3 refractionRayOrig;
-      //            if (true == outside) refractionRayOrig = hitPoint - bias;
-      //            else refractionRayOrig = hitPoint + bias;
-
-      //            refractionColor = castRay(refractionRayOrig, refractionDir, objects, lights, depth + 1);
-      //         }
-
-      //         arma::vec3 reflectionDir = arma::normalise(rrr::reflect(viewingDirection, hitNormal));
-
-      //         arma::vec3 reflectionRayOrig;
-      //         if (true == outside) reflectionRayOrig = hitPoint - bias;
-      //         else reflectionRayOrig = hitPoint + bias;
-
-      //         arma::vec3 reflectionColor = castRay(reflectionRayOrig, reflectionDir, objects, lights, depth + 1);
-
-      //         hitColor += reflectionColor * kr + refractionColor * (1 - kr);
-      //      }
-      //      else if (true == interObjInfo.hitObject->material->isReflective())
-      //      {
-      //         arma::vec3 R = rrr::reflect(viewingDirection, hitNormal);
-      //         hitColor += 0.8 * castRay(hitPoint + hitNormal * this->settings.getBias(), R, objects, lights, depth + 1);
-      //      }
-      //      else if (false == trace({ hitPoint + (hitNormal * this->settings.getBias()), -shInfo.lightDirection, Ray::RayType::SHADOW }, objects, shadowIntersectionInfo));
-      //      {
-      //         double temp = std::max(0.0, arma::dot(hitNormal, -shInfo.lightDirection));
-      //         hitColor += (interObjInfo.hitObject->getColor().toArmaVec3F() % interObjInfo.hitObject->material->diffuse % shInfo.colorIntensity) * temp;
-      //      }
-
-      //      //std::cout << hitColor.toArmaVec() << std::endl;
-      //   }
-      //}
-      //else
-      //{
-      //   hitColor = this->settings.getBackgroundColor().toArmaVec3F();
-      //}
       IntersectionInfo interObjInfo;
       if (trace({ orig, dir, Ray::RayType::PRIMARY }, objects, interObjInfo))
       {

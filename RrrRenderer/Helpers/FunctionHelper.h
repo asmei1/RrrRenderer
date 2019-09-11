@@ -1,6 +1,8 @@
 #pragma once
 #include <vector>
 #include "BMPImg.h"
+#include "Material.h"
+
 //
 //RrrColor::BGRA HSVtoRGB(RrrColor::HSV);
 //RrrColor::HSV RGBtoHSV(RrrColor::BGRA);

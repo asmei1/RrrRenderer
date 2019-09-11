@@ -162,6 +162,7 @@
     <ClCompile Include="BMPImg.cpp" />
     <ClCompile Include="DirectionLight.cpp" />
     <ClCompile Include="Helpers\FunctionHelper.cpp" />
+    <ClCompile Include="Material.cpp" />
     <ClCompile Include="Object_A.cpp" />
     <ClCompile Include="ObjModel.cpp" />
     <ClCompile Include="PointLight.cpp" />
