@@ -1,7 +1,7 @@
 #pragma once
 #include <vector>
 #include "BMPImg.h"
-#include "Material.h"
+#include <cassert>
 
 //
 //RrrColor::BGRA HSVtoRGB(RrrColor::HSV);
@@ -24,6 +24,9 @@ namespace rrr
    arma::vec3 refract(const arma::vec3& N, const arma::vec3& I, const float& ior);
    float fresnel(const arma::vec3& N, const arma::vec3& I, const float& ior);
 
+   RrrColor::RGBA parseColorFromStr(const std::vector<std::string>& tokens /*, bool rgba = false*/);
+
+   void log(const std::string& msg);
 
    // trim from start (in place)
    void ltrim(std::string& s);
@@ -31,6 +34,7 @@ namespace rrr
    void rtrim(std::string& s);
    // trim from both ends (in place)
    void trim(std::string& s);
+   void trim(std::vector<std::string>& tokens);
 
    inline double deg2rad(const double& deg)
    {

@@ -97,7 +97,15 @@ std::vector<std::string> rrr::split(const std::string& str, const std::string& d
       prev = pos + delimiter.length();
    }
    //take last token to rV
-   rV.push_back(str.substr(prev));
+   const std::string lastToken = str.substr(prev);
+   if (false == lastToken.empty())
+   {
+      rV.push_back(lastToken);
+   }
+   else if(true == includeEmptyTokens)
+   {
+      rV.push_back(lastToken);
+   }
 
    return rV;
 }
@@ -188,13 +196,13 @@ void rrr::multDirMatrixCM(const arma::dmat44& x, const arma::vec3& src, arma::ve
    dst.z() = c;
 }
 
-arma::vec3 rrr::reflect(const arma::vec3& N, const arma::vec3& I)
+arma::vec3 rrr::reflect(const arma::vec3& I, const arma::vec3& N)
 {
-   return I - 2 * arma::dot(I, N) * N;
+   return I - (2 * arma::dot(I, N) * N);
 }
 
 
-arma::vec3 rrr::refract(const arma::vec3& N, const arma::vec3& I, const float& ior)
+arma::vec3 rrr::refract(const arma::vec3& I, const arma::vec3& N, const float& ior)
 {
    //initialize return value
    arma::vec3 rV;
@@ -271,6 +279,33 @@ float rrr::fresnel(const arma::vec3& I, const arma::vec3& N, const float& ior)
    return kr;
 }
 
+RrrColor::RGBA rrr::parseColorFromStr(const std::vector<std::string>& tokens)
+{
+   RrrColor::RGBA rV;
+   try
+   {
+      rV.r = std::stoi(tokens[0]);
+      rV.g = std::stoi(tokens[1]);
+      rV.b = std::stoi(tokens[2]);
+      /*      if(true == rgba)
+            {
+               rV.a = std::stoi(tokens[index + 4]);
+            }
+      */
+   }
+   catch (...)
+   {
+      assert(false && "Cannot parse color");
+   }
+   return rV;
+
+}
+
+void rrr::log(const std::string& msg)
+{
+   std::cerr << msg << std::endl;
+}
+
 void rrr::ltrim(std::string& s)
 {
    s.erase(s.begin(),
@@ -294,6 +329,14 @@ void rrr::trim(std::string& s)
 {
    ltrim(s);
    rtrim(s);
+}
+
+void rrr::trim(std::vector<std::string>& tokens)
+{
+   for(auto& str : tokens)
+   {
+      trim(str);
+   }
 }
 
 

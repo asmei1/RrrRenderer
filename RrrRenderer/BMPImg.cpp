@@ -28,7 +28,7 @@ BMPImg::BMPImg(uint32_t width, uint32_t height, RrrColor::RGBA color, bool exten
          this->dataGrid.push_back(std::vector<uint8_t>(this->rowStride, 0));
          auto &vec = this->dataGrid.back();
          int k = 0;
-         for (int j = 0; j < this->rowStride; ++j, ++k)
+         for (uint32_t j = 0; j < this->rowStride; ++j, ++k)
          {
             switch (k)
             {
@@ -53,7 +53,7 @@ BMPImg::BMPImg(uint32_t width, uint32_t height, RrrColor::RGBA color, bool exten
       {
          std::vector<uint8_t> vec(this->rowStride, 0);
          int k = 0;
-         for (int j = 0; j < this->rowStride; ++j, ++k)
+         for (uint32_t j = 0; j < this->rowStride; ++j, ++k)
          {
             switch (k)
             {

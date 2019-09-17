@@ -1,8 +1,8 @@
 #pragma once
-#include "Object_A.h"
-#include "Light_A.h"
+#include "Objects/Object_A.h"
+#include "Lights/Light_A.h"
 
-
+struct Intersection;
 
 class Scene
 {
@@ -19,22 +19,23 @@ public:
 
    void addObjectToScene(ObjectUptr object);
 
-   std::vector<ObjectUptr>& getObjects();
-   std::vector<LightUptr>& getLights();
-   void createSphere(const arma::vec3& position, float radius, const Material* _material, RrrColor::RGBA color = RrrColor::randomColor());
+   const std::vector<ObjectUptr>& getObjects() const;
+   const std::vector<LightUptr>& getLights() const;
+   void createSphere(const arma::vec3& position, float radius, Material* _material, RrrColor::RGBA color = RrrColor::randomColor());
 
    void createDirectionalLight(const arma::vec3& direction, float intensity, const RrrColor::RGBA& color);
    void createPointLight(const arma::vec3& position, float intensity, const RrrColor::RGBA& color);
 
    void transformWorld(const arma::dmat44& transformMatrix);
 
+   bool trace(const Ray& ray, Intersection& interObjInfo, std::vector<const Object_A*> ignore = {}) const;
 
    friend std::ostream& operator<<(std::ostream& os, Scene& scene);
 
    void pitch(float angle);
    void yaw(float angle);
    void roll(float angle);
-   void translate(const arma::vec3 transformVec);
+   void translate(const arma::vec3& transformVec);
 
 private:
    arma::mat allObjectsPositionMatrix;

@@ -160,38 +160,53 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="BMPImg.cpp" />
-    <ClCompile Include="DirectionLight.cpp" />
     <ClCompile Include="Helpers\FunctionHelper.cpp" />
-    <ClCompile Include="Material.cpp" />
-    <ClCompile Include="Object_A.cpp" />
+    <ClCompile Include="Lights\DirectionLight.cpp" />
+    <ClCompile Include="Lights\Light.cpp" />
+    <ClCompile Include="Lights\PointLight.cpp" />
+    <ClCompile Include="Materials\Material.cpp" />
+    <ClCompile Include="Materials\MaterialSimpleFactory.cpp" />
+    <ClCompile Include="Materials\MetallicMaterial.cpp" />
+    <ClCompile Include="Materials\MirrorMaterial.cpp" />
+    <ClCompile Include="Materials\PlasticMaterial.cpp" />
+    <ClCompile Include="Materials\RefractMaterial.cpp" />
+    <ClCompile Include="Materials\TestingMaterial.cpp" />
+    <ClCompile Include="Objects\Object_A.cpp" />
+    <ClCompile Include="Objects\Sphere.cpp" />
     <ClCompile Include="ObjModel.cpp" />
-    <ClCompile Include="PointLight.cpp" />
     <ClCompile Include="Ray.cpp" />
     <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Scene.cpp" />
     <ClCompile Include="Settings.cpp" />
-    <ClCompile Include="Sphere.cpp" />
+    <ClCompile Include="WorldTracer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BMPImg.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="Colors.h" />
-    <ClInclude Include="DirectionLight.h" />
     <ClInclude Include="Helpers\FunctionHelper.h" />
     <ClInclude Include="Helpers\timer.hpp" />
-    <ClInclude Include="IntersectionInfo.h" />
-    <ClInclude Include="Light_A.h" />
-    <ClInclude Include="Material.h" />
-    <ClInclude Include="Object_A.h" />
+    <ClInclude Include="Intersection.h" />
+    <ClInclude Include="Lights\DirectionLight.h" />
+    <ClInclude Include="Lights\Light_A.h" />
+    <ClInclude Include="Lights\PointLight.h" />
+    <ClInclude Include="Materials\Material.h" />
+    <ClInclude Include="Materials\MaterialSimpleFactory.h" />
+    <ClInclude Include="Materials\MetallicMaterial.h" />
+    <ClInclude Include="Materials\MirrorMaterial.h" />
+    <ClInclude Include="Materials\PlasticMaterial.h" />
+    <ClInclude Include="Materials\RefractMaterial.h" />
+    <ClInclude Include="Materials\TestingMaterial.h" />
+    <ClInclude Include="Objects\Object_A.h" />
+    <ClInclude Include="Objects\Sphere.h" />
     <ClInclude Include="ObjModel.h" />
-    <ClInclude Include="PointLight.h" />
     <ClInclude Include="Ray.h" />
     <ClInclude Include="Renderer.h" />
     <ClInclude Include="Scene.h" />
     <ClInclude Include="Settings.h" />
-    <ClInclude Include="Sphere.h" />
     <ClInclude Include="Transform_I.h" />
+    <ClInclude Include="WorldTracer.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

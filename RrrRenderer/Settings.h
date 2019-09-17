@@ -34,7 +34,7 @@ private:
    uint32_t height;
    int maxDepth;
    float fov;
-   float bias = 1e-4;
+   float bias = 1e-4f;
    RrrColor::RGBA backgroundColor; 
 
 };

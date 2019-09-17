@@ -1,7 +1,8 @@
 #include "Scene.h"
-#include "Sphere.h"
-#include "DirectionLight.h"
-#include "PointLight.h"
+#include "Objects/Sphere.h"
+#include "Lights/DirectionLight.h"
+#include "Lights/PointLight.h"
+#include "Intersection.h"
 
 #include <random>
 #include "Helpers/FunctionHelper.h"
@@ -17,19 +18,19 @@ void Scene::addObjectToScene(ObjectUptr object)
    this->objects.push_back(std::move(object));
 }
 
-std::vector<ObjectUptr>& Scene::getObjects()
+const std::vector<ObjectUptr>& Scene::getObjects() const
 {
    return this->objects;
 }
 
-std::vector<LightUptr>& Scene::getLights()
+const std::vector<LightUptr>& Scene::getLights() const
 {
    return this->lights;
 }
 
-void Scene::createSphere(const arma::vec3& position, float radius, const Material* material, RrrColor::RGBA color)
+void Scene::createSphere(const arma::vec3& position, float radius, Material* material, RrrColor::RGBA color)
 {
-   int positionIndex = this->allObjectsPositionMatrix.n_cols;
+   int positionIndex = static_cast<int>(this->allObjectsPositionMatrix.n_cols);
    this->allObjectsPositionMatrix.insert_cols(positionIndex, arma::dvec4{ position.x(), position.y(), position.z(), 1 });
 
    ObjectUptr sphere(new Sphere(positionIndex, radius, color, material));
@@ -89,7 +90,7 @@ void Scene::roll(float angle)
    this->transformWorld(rollMatrix);
 }
 
-void Scene::translate(const arma::vec3 transformVec)
+void Scene::translate(const arma::vec3& transformVec)
 {
    arma::dmat44 trans{
                       {1, 0, 0, transformVec.x()},
@@ -98,6 +99,30 @@ void Scene::translate(const arma::vec3 transformVec)
                            {0, 0, 0, 1} };
    this->transformWorld(trans);
 
+}
+
+bool Scene::trace(const Ray& ray, Intersection& interObjInfo, std::vector<const Object_A*> ignore) const
+{
+   std::vector<std::unique_ptr<Object_A>>::const_iterator iter = this->objects.begin();
+   float t = std::numeric_limits<float>::max();
+   for (; this->objects.cend() != iter; ++iter)
+   {
+      if (std::find(ignore.begin(), ignore.end(), iter->get()) == ignore.end())
+      {
+         if ((*iter)->intersect(ray, t) && t < interObjInfo.tNear) {
+            //if (Ray::RayType::SHADOW == ray.type
+            //   && true == (*iter)->material->isReflective()
+            //   && true == (*iter)->material->isRefractive())
+            //{
+            //   continue;
+            //}
+            interObjInfo.hitObject = iter->get();
+               interObjInfo.tNear = t;
+         }
+      }
+   }
+
+   return interObjInfo.hitObject != nullptr;
 }
 
 std::ostream& operator<<(std::ostream& os, Scene& scene)
