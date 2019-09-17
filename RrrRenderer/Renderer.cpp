@@ -9,41 +9,6 @@ Renderer::Renderer()
    this->camera.lookAt({ 0, 0, -1 });
 }
 
-//void Renderer::prepareScene()
-//{
-//   std::random_device rd;
-//   std::mt19937 gen(rd());
-//   std::uniform_real_distribution<> dis(.2, 1);
-//   std::uniform_real_distribution<> disAlbedo(.05, .4);
-//   std::uniform_real_distribution<> disPos(-5, 5);
-//
-//   this->settings.setBackgroundColor({ 153,190,210 });
-//
-//   //lights
-//   this->scene.createDirectionalLight({ 1, -1, 0 }, 5, RrrColor::White);
-//   //this->scene.createDirectionalLight({ 1, -.5, .2 }, 4, RrrColor::White);
-//   //this->scene.createDirectionalLight({ 1, -1, 0 }, 5, RrrColor::White);
-//   //this->scene.createDirectionalLight({ -1, -1, 0 }, 5, RrrColor::Red);
-//   //this->scene.createDirectionalLight({ 0, -.8, .5 }, 5, RrrColor::Blue);
-//
-//   //this->scene.createPointLight({ -2.5, 1.8, -4.1 }, 50, RrrColor::White);
-//
-//   //objects
-//
-//   //for (int i = 0; i < 20; i++)
-//   //{
-//   //   //    this->scene.createSphere(arma::vec3{ disPos(rd), disPos(rd), disPos(rd) - 6 }, dis(rd), disAlbedo(rd));
-//   //}
-//   ////this->scene.createSphere(arma::vec3{ -0.8, 0, -5 }, 0.7f);
-//   this->scene.createSphere(arma::vec3{ 0, 1.2, -4.4 }, 1, &testingMaterial);
-//   //this->scene.createSphere(arma::vec3{ 0, 1.2, -4.2 }, 0.5, GlassMaterial);
-//   //this->scene.createSphere(arma::vec3{ 0, 1.2, -4.2 }, 0.3, GlassMaterial);
-//   ////this->scene.createSphere(arma::vec3{ 0, -3.5, -4.5 }, 3.4, GlassMaterial, RrrColor::White);
-//   this->scene.createSphere(arma::vec3{ 0, -3.5, -4.5 }, 3.4, &ReflectiveMaterial, RrrColor::White);
-//   this->scene.createSphere(arma::vec3{ 4.3, 0, -4.7 }, 3, &ReflectiveMaterial, RrrColor::Green);
-//
-//}
-
 bool Renderer::loadSceneFromFile(const std::filesystem::path& scene)
 {
    bool rV = false;
@@ -107,104 +72,7 @@ void Renderer::render(const std::string& fileName, bool debug)
       std::cout << this->scene << std::endl;
    }
 }
-//
-//inline
-//arma::vec3 mix(const RrrColor::RGBA& a, const float& mixValue)
-//{
-//   arma::vec3 r;
-//   r.x() = a.r   * (1 - mixValue) + 0.8 * a.r * mixValue;
-//   r.y() = a.g * (1 - mixValue) + 0.8 * a.g * mixValue;
-//   r.z() = a.b  * (1 - mixValue) + 0.8 * a.b * mixValue;
-//   return r;
-//}
-//
-//arma::vec3 Renderer::castRay(const arma::vec3& orig, const arma::vec3& dir, const std::vector<ObjectUptr>& objects, const std::vector<LightUptr>& lights, const uint8_t& depth)
-//{
-//   arma::vec3 hitColor = arma::vec3{ 0, 0, 0 };
-//   if (depth > this->settings.getMaxDepth())
-//   {
-//      hitColor = this->settings.getBackgroundColor().toArmaVec3F();
-//   }
-//   else
-//   {
-//      Intersection interObjInfo;
-//      if (this->scene.trace({ orig, dir, Ray::RayType::PRIMARY }, interObjInfo))
-//      {
-//         //shaded point
-//         arma::vec3 hitPoint = orig + dir * interObjInfo.tNear;
-//
-//         arma::vec3 hitNormal{ 0, 0, 0 };
-//         arma::vec2 hitTextureCoordinates{ 0, 0 };
-//
-//         interObjInfo.hitObject->getSurfaceData(hitPoint, dir, hitNormal, hitTextureCoordinates);
-//
-//
-//         if (true == interObjInfo.hitObject->material->isReflective() && true == interObjInfo.hitObject->material->isRefractive())
-//         {
-//            arma::vec3 refractionColor;
-//            refractionColor.zeros();
-//
-//            float kr = rrr::fresnel(dir, hitNormal, interObjInfo.hitObject->material->refractive);
-//            bool outside = arma::dot(dir, hitNormal) < 0;
-//            arma::vec3 bias = this->settings.getBias() * hitNormal;
-//
-//            if (kr < 1)
-//            {
-//               arma::vec3 refractionDir = rrr::refract(dir, hitNormal, interObjInfo.hitObject->material->refractive);
-//               refractionDir = arma::normalise(refractionDir);
-//
-//               arma::vec3 refractionRayOrig;
-//               if (true == outside) refractionRayOrig = hitPoint - bias;
-//               else refractionRayOrig = hitPoint + bias;
-//
-//               refractionColor = castRay(refractionRayOrig, refractionDir, objects, lights, depth + 1);
-//            }
-//
-//            arma::vec3 reflectionDir = arma::normalise(rrr::reflect(dir, hitNormal));
-//
-//            arma::vec3 reflectionRayOrig;
-//            if (true == outside) reflectionRayOrig = hitPoint - bias;
-//            else reflectionRayOrig = hitPoint + bias;
-//
-//            arma::vec3 reflectionColor = castRay(reflectionRayOrig, reflectionDir, objects, lights, depth + 1);
-//
-//            hitColor += reflectionColor * kr + refractionColor * (1 - kr);
-//         }
-//         else if (true == interObjInfo.hitObject->material->isReflective())
-//         {
-//            arma::vec3 R = rrr::reflect(dir, hitNormal);
-//            hitColor += 0.8 * castRay(hitPoint + hitNormal * this->settings.getBias(), R, objects, lights, depth + 1);
-//         }
-//         else
-//         {
-//            for (const auto& light : lights)
-//            {
-//               ShadingInfo shInfo = light->getLightInfo(hitPoint);
-//               Intersection shadowIntersectionInfo;
-//               if (false == this->scene.trace({ hitPoint + (hitNormal * this->settings.getBias()), -shInfo.lightDirection, Ray::RayType::SHADOW }, shadowIntersectionInfo))
-//               {
-//                  double temp = std::max(0.0, arma::dot(hitNormal, -shInfo.lightDirection));
-//                  if (true == interObjInfo.hitObject->material->isReflective())
-//                     hitColor += (interObjInfo.hitObject->material->diffuse % shInfo.colorIntensity) * temp;
-//                  else
-//                     hitColor += (interObjInfo.hitObject->getColor().toArmaVec3F() % interObjInfo.hitObject->material->diffuse % shInfo.colorIntensity) * temp;
-//
-//               }
-//            }
-//
-//            //std::cout << hitColor.toArmaVec() << std::endl;
-//         }
-//      }
-//      else
-//      {
-//         hitColor = this->settings.getBackgroundColor().toArmaVec3F();
-//      }
-//   }
-//
-//   return hitColor;
-//}
-//
-//
+
 void Renderer::prepareScene(const std::string& sceneDescription)
 {
    //camera
@@ -234,6 +102,8 @@ void Renderer::prepareScene(const std::string& sceneDescription)
 
    const std::string sphereObj = "sph";
    const std::string radiusObj = "radius";
+   const std::string specExponentObj = "n";
+   const std::string specularWeightObj = "ks";
 
    const std::string positionObj = "pos";
    const std::string directionObj = "dir";
@@ -320,6 +190,8 @@ void Renderer::prepareScene(const std::string& sceneDescription)
          arma::vec3 coords;
          coords.zeros();
          float radius = 1;
+         std::optional<float> ksComponent = std::nullopt;
+         std::optional<float> nComponent = std::nullopt;
          for (const auto& [propName, args] : propertiesAndValues)
          {
             if (positionObj == propName)
@@ -348,7 +220,31 @@ void Renderer::prepareScene(const std::string& sceneDescription)
                   radius = std::stof(args[0]);
                }
             }
+            else if (specExponentObj == propName)
+            {
+               if (true == checkValues(args, 1, specExponentObj))
+               {
+                  nComponent = std::stof(args[0]);
+               }
+            }
+            else if (specularWeightObj == propName)
+            {
+               if (true == checkValues(args, 1, specularWeightObj))
+               {
+                  ksComponent = std::stof(args[0]);
+               }
+            }
 
+         }
+
+         if(ksComponent)
+         {
+            (*material)->setSpecularWeight(*ksComponent);
+         }
+
+         if(nComponent)
+         {
+            (*material)->setSpecularExponent(*nComponent);
          }
          //create sphere
          this->scene.createSphere(coords, radius, *material, color);

@@ -30,9 +30,9 @@ arma::vec3 Material::getShade(const arma::vec3& hitPoint, const Object_A* object
       {
 
          //diffuse
-         /*double temp = std::fmax(0.0, arma::dot(hitNormal, -shInfo.lightDirection));
+         double temp = std::fmax(0.0, arma::dot(hitNormal, -shInfo.lightDirection));
          diffuseColor += this->albedo % this->color % shInfo.colorIntensity * temp;
-*/
+
          //specular
          arma::vec3 reflectVec = rrr::reflect(shInfo.lightDirection, hitNormal);
          specularColor += shInfo.colorIntensity % this->color * std::powf(std::max(0.0, arma::dot(reflectVec, -ray.dir)), this->n);
